@@ -7,3 +7,4 @@ $mod_strings['LBL_ACOMPANIANTE_C'] = 'Acompañante';
 $mod_strings['LBL_OBJETIVO_C'] = 'Objetivo';
 $mod_strings['LBL_REFERENCIADA_C'] = 'Referenciada';
 $mod_strings['LBL_RESULTADO_C'] = 'Resultado de Cita';
+

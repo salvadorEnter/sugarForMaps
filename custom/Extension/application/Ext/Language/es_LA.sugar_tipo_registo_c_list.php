@@ -1,11 +1,11 @@
 <?php
- // created: 2019-05-24 10:59:53
+ // created: 2019-05-24 09:02:12
 
-$app_list_strings['tipo_registro_list']=array (
+$app_list_strings['tipo_registo_c_list']=array (
   '' => '',
   'Lead' => 'Lead',
   'Prospecto' => 'Prospecto',
   'Cliente' => 'Cliente',
-  'Persona' => 'Persona',
   'Proveedor' => 'Proveedor',
+  'Persona' => 'Persona',
 );

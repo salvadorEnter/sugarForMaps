@@ -1,0 +1,88 @@
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.1.5/css/fixedHeader.dataTables.min.css"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+
+<style>
+	#map{
+		height: 410px;
+		width: 710px;
+	}
+	#registros{ 
+		width:auto; 
+	}
+	.linkcuenta:hover {
+  	background-color: yellow;
+	}
+ 	table th a { display: block; }
+  	
+</style>
+<div class="row-fluid" style="display:flex; flex-direction: row; align-items:flex-start;" id="inputs">
+	<div class="span3">
+		<input type="text" name="nombre" id="nombre" placeholder="Nombre" style="width: 95%;margin: 4px;display: inline-block;">
+	</div>
+	<div class="span3">
+		<select class="tipo select2" placeholder="Select" style="width: 100%;margin: 4px;display: inline-block;">
+			{{#each tipoRegistro}}
+				<option value="{{@key}}" {{ifSelected @key ../tipo}}>{{this}}</option>
+			{{/each}}
+		</select>
+	</div>
+	<div class="span3">
+		<input type="text" name="telefono" id="telefono" placeholder="Telefono" style="width: 95%;margin: 4px;display: inline-block;">
+	</div>
+	<div class="span3">
+		<button class="btn btn-primary" id="buscarCuentas" class="buscarCuentas" style="width: 50%;margin: 4px;display: inline-block;">Buscar</button>
+	</div>
+	<br>
+</div>
+<!--
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpgKtiodM-mnWhHcIJrhS9CADCsdFssEQ&libraries=places">
+</script>-->
+<br>
+<div class="row-fluid" style="display:flex; flex-direction: row; align-items:flex-start;">
+	<div id="map" class="span6"></div>
+	<div class="list-view span6 table">
+		<table class="datos" id="registros">
+			<thead >
+				<tr>
+	                <th >Cuenta</th>
+	             	<th >Régimen Fiscal</th>
+	                <th >Tipo</th>
+	                <th >Telefono</th>
+	                <th >Latitud</th>
+	                <th >Longitud</th>
+	            </tr>
+	        </thead>
+	        <tbody id="Cuentas">
+	          {{#each cuentas.records}}
+	            <tr>
+	                <td class="nombre" >
+	                	<a class="linkcuenta" href="#Accounts/{{id}}" target="_blank" data-id="{{id}}">{{name}}</a>
+	                </td>
+	                <td  class="regimen">
+	                	{{tipodepersona_c}}
+	                </td>
+	                <td  class="tipo">
+	                  {{tipo_registro_c}}<!--Como lo regresa el JSON-->
+	                </td>
+	                <td  class="telefono">
+	            		{{phone_office}}
+	                </td>
+	                <td  class="Latitud">
+	                	{{latitud_c}}
+	                </td>
+	                <td  class="Latitud">
+	                	{{longitud_c}}
+	                </td>
+	            </tr>
+	          {{/each}}
+	        </tbody>
+		</table>
+		<div class="col-md-12 text-center">
+			<ul class="pagination pagination-lg pager" id="developer_page"></ul>
+		</div>
+	</div>
+</div>

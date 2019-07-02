@@ -9,8 +9,10 @@
  *
  * Copyright (C) SugarCRM Inc. All rights reserved.
  */
-
-$viewdefs['Meetings']['base']['view']['recordlist'] = array(
+$viewdefs['base']['view']['recordlist'] = array(
+    'favorite' => true,
+    'following' => true,
+    'sticky_resizable_columns' => true,
     'selection' => array(
         'type' => 'multi',
         'actions' => array(
@@ -18,21 +20,30 @@ $viewdefs['Meetings']['base']['view']['recordlist'] = array(
                 'name' => 'massupdate_button',
                 'type' => 'button',
                 'label' => 'LBL_MASS_UPDATE',
-                'acl_action' => 'massupdate',
                 'primary' => true,
                 'events' => array(
                     'click' => 'list:massupdate:fire',
                 ),
+                'acl_action' => 'massupdate',
             ),
             array(
-                'name' => 'massdelete_button',
+                'name' => 'calc_field_button',
                 'type' => 'button',
-                'label' => 'LBL_DELETE',
-                'acl_action' => 'delete',
+                'label' => 'LBL_UPDATE_CALC_FIELDS',
+                'events' => array(
+                    'click' => 'list:updatecalcfields:fire',
+                ),
+                'acl_action' => 'massupdate',
+            ),
+            array(
+                'name' => 'merge_button',
+                'type' => 'button',
+                'label' => 'LBL_MERGE',
                 'primary' => true,
                 'events' => array(
-                    'click' => 'list:massdelete:fire',
+                    'click' => 'list:mergeduplicates:fire',
                 ),
+                'acl_action' => 'edit',
             ),
             array(
                 'name' => 'massdelete_button',
@@ -67,20 +78,8 @@ $viewdefs['Meetings']['base']['view']['recordlist'] = array(
                 'acl_action' => 'view',
             ),
             array(
-                'type' => 'launchbutton',
-                'name' => 'host_button',
-                'host' => true,
-                'acl_action' => 'view',
-            ),
-            array(
-                'type' => 'launchbutton',
-                'name' => 'join_button',
-                'acl_action' => 'view',
-            ),
-            array(
                 'type' => 'rowaction',
                 'name' => 'edit_button',
-                'icon' => 'fa-pencil',
                 'label' => 'LBL_EDIT_BUTTON',
                 'event' => 'list:editrow:fire',
                 'acl_action' => 'edit',
@@ -93,17 +92,14 @@ $viewdefs['Meetings']['base']['view']['recordlist'] = array(
             ),
             array(
                 'type' => 'rowaction',
-                'icon' => 'fa-trash-o',
+                'name' => 'delete_button',
                 'event' => 'list:deleterow:fire',
                 'label' => 'LBL_DELETE_BUTTON',
                 'acl_action' => 'delete',
             ),
-            array(
-                'type' => 'deleterecurrencesbutton',
-                'name' => 'delete_recurrence_button',
-                'label' => 'LBL_REMOVE_ALL_RECURRENCES',
-                'acl_action' => 'delete',
-            ),
         ),
+    ),
+    'last_state' => array(
+        'id' => 'record-list',
     ),
 );

@@ -153,7 +153,6 @@
                 function(){
                 //alert('Drawer Cerrado');
                     location.reload();
-
                 });
         }
     },

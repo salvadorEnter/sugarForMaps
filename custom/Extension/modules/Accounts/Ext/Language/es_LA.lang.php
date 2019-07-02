@@ -295,3 +295,5 @@ $mod_strings['LBL_TCT_DATES_ACCOUNT_STATEMENTS_C'] = 'Fechas de estados de cuent
 $mod_strings['LBL_TCT_NUEVO_PLD_C'] = 'Nuevo Pld';
 $mod_strings['LBL_TCT_DEPOSITOS_PROMEDIO_C'] = 'Depósitos Promedio';
 $mod_strings['ACCOUNTS_TCT_PLD'] = 'Cuestionario PLD';
+$mod_strings['LBL_LATITUD_C'] = 'Latitud';
+$mod_strings['LBL_LONGITUD_C'] = 'Longitud';

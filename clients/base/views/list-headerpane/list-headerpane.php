@@ -9,7 +9,6 @@
  *
  * Copyright (C) SugarCRM Inc. All rights reserved.
  */
-
 $viewdefs['base']['view']['list-headerpane'] = array(
     'fields' => array(
         array(
