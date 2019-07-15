@@ -21,7 +21,7 @@
     plugins: ['Pagination'],
 
     events: {
-        'click [class*="orderBy"]':'setOrderBy'
+        'click [class*="orderBy"]':'setOrderBy',
     },
 
     defaultLayoutEvents: {
@@ -503,5 +503,6 @@
                 }
             }
         });
-    }
+    },
+
 })

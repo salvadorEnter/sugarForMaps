@@ -15,18 +15,20 @@
 <head>
     <title></title>
 </head>
-<!--
-<style type="text/css">
-    html, body, #map_canvas {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    }
-    #map_canvas {
-        position: relative;
-    }
-</style>-->
+    <style>
+       #wrapper { position: relative; }
+       #over_map{ 
+        position: absolute; 
+        top: 18px; 
+        /*left: 10px;*/ 
+        z-index: 99;
+        right: 120px;
+        /*justify-content: center;*/
+        }
+        #Ruta{
+            top: 20px; 
+        }
+    </style>
 <body>
 <div class="search-filter">
     <div class="control-group">
@@ -51,7 +53,21 @@
         {{component this 'filter-actions'}}
     </div>
 </div>
-<div id="map">
+<!--<div id="floating-panel">
+    <button type="button" class="btn btn-light" id="inicio">Light</button>
+    <button type="button" class="btn btn-light" id="fin">Light</button>
+    </div>-->
+<div id="wrapper">
+    <div id="map"></div>
+    <div id="over_map">
+        <button type="button" class="btn btn-primary" id="plan">Ruta Planeada</button>
+        <select id="select">
+            <option value="1">Fecha de inicio de reunión</option>
+            <option value="2">Ubicación actual</option>
+            <option value="3">Ubicación de oficina</option>
+        </select>
+        <button type="button" class="btn btn-primary historial" id="historial">Obtener Historial de Visitas</button>
+    </div>
 </div>
 <div class="main-content"></div>
 <script async defer

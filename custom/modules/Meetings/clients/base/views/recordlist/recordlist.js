@@ -41,7 +41,11 @@
         "list:editrow:fire": "editClicked",
         "list:deleterow:fire": "warnDelete"
     },
-    //Coordenadas:[],
+    
+    events:{
+        //'mouseover .mouse':'abrirInfoWindow',
+        //'mouseout .mouse':'cerrarInfoWindow',
+    },
     /**
      * @override
      * @param {Object} options
@@ -67,56 +71,173 @@
 
         this._bindEvents();
         window.Coordenadas=[];
-        this.Reunion=[];     
+        this.Reunion=[];
+        this.nameReunion=[];
+        this.marcadores=[];
+        this.cuentaRel=[];
+        this.usuarioAsig=[];
+        this.map;
+        this.cuentaUsuario;
+        /*
+        this.cuentas=[];
+        this.usuarios=[];
+        self=this;
+        */
     },
-
+    //Render-recorlist
     _render:function(fields,errors,callback){
         this._super("_render");
         this.getCoordenadas();
         this.initMap();
     },
-
+    /*recordlis*/
     getCoordenadas:function(){
         console.log("Si entra a la funcion");
         window.Coordenadas=[];
         this.Reunion=[];
+        this.nameReunion=[];
         if(this.collection.models.length>0){
             for(var i=0;i<this.collection.models.length;i++){
                 if((this.collection.models[i].attributes.check_in_latitude_c!="" && this.collection.models[i].attributes.check_in_latitude_c!=undefined) && (this.collection.models[i].attributes.check_in_longitude_c!="" && this.collection.models[i].attributes.check_in_longitude_c!=undefined)){
                     window.Coordenadas.push({lat:parseFloat(this.collection.models[i].attributes.check_in_latitude_c),lng:parseFloat(this.collection.models[i].attributes.check_in_longitude_c)});
-                    this.Reunion.push(this.collection.models[i].attributes.name);
-                    console.log("El valor de Coordenadas es:"+this.Coordenadas);    
+                    this.Reunion.push(this.collection.models[i].attributes.id);
+                    this.nameReunion.push({'id':this.collection.models[i].attributes.id,
+                                           'name':this.collection.models[i].attributes.name,
+                                           'status':this.collection.models[i].attributes.status,
+                                           'date_start':this.collection.models[i].attributes.date_start,
+                                           'date_end':this.collection.models[i].attributes.date_end,
+                                           'user_assigned':this.collection.models[i].attributes.assigned_user_id,
+                                           'parent_account':this.collection.models[i].attributes.parent_id
+                                       });
                 }
             }
         }
     },
 
+    search:function(key,nameReunion){
+        for(var i=0;i<nameReunion.length;i++){
+            if(nameReunion[i].id===key){
+            return nameReunion[i];
+            }
+        }
+    },
+
     initMap:function() {
+        var self=this;
         var bounds= new google.maps.LatLngBounds();
-        var map = new google.maps.Map(document.getElementById('map'), {
+        map = new google.maps.Map(document.getElementById('map'), {
             zoom: 7,
             center: {lat: 19.4326018, lng: -99.13320490000001}
             });
         if(window.Coordenadas.length>0){
-            //var final=window.Coordenadas[window.Coordenadas.length-1];
-            //var infowindow = new google.maps.InfoWindow();
+            var infowindow = new google.maps.InfoWindow();
             map = new google.maps.Map(document.getElementById('map'), {
-                });
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                    mapTypeIds: ['roadmap', 'terrain']
+                }
+            });
             for(var i=0;i<window.Coordenadas.length;i++){
                 var mylocation=window.Coordenadas[i];
                 var markers=new google.maps.Marker({
                     position:mylocation,
                     map:map,
-                    title:this.Reunion[i]
+                    title:this.Reunion[i],
+                    clickable:true
                 });
+                google.maps.event.addListener(markers, 'click', (function (markers, i) {
+                    return function () {
+                        var cuentas_url=app.api.buildURL('GetAccountsMeetings/'+markers.title,null,null,null);
+                        app.api.call('GET',cuentas_url,{},{
+                            success:function(data){
+                            self.cuentaUsuario=data;
+                            var contenido='<div class="container" style="width:300px; height:200px;">'+
+                                        '<ul class="nav nav-tabs">'+
+                                            '<li class="active">'+
+                                                '<a data-toggle="tab" href="#home">'+
+                                                    'Reunión'+
+                                                '</a>'+
+                                            '</li>'+
+                                            '<li>'+
+                                                '<a data-toggle="tab" href="#menu1">'+
+                                                    'Cuenta'+
+                                                '</a>'+
+                                            '</li>'+
+                                            '<li>'+
+                                                '<a data-toggle="tab" href="#menu2">'+
+                                                    'Usuario'+
+                                                '</a>'+
+                                            '</li>'+
+                                        '</ul>'+
+                                        '<div class="tab-content">'+
+                                            '<div id="home" class="tab-pane fade in active">'+
+                                                '<p><a href="#Meetings/'+ObjReunion.id+'"target="_blank">'+ObjReunion.name+'</a></p>'+
+                                                '<p>Estado:'+App.lang.getAppListStrings('meeting_status_dom')[ObjReunion.status]+'</p>'+
+                                                '<p>Fecha Inicio:'+fechaCompleta+'</p>'+
+                                                '<p>Fecha Fin:'+fechaCompletafin+'</p>'+
+                                            '</div>'+
+                                            '<div id="menu1" class="tab-pane fade">'+
+                                                '<p><a href="#Accounts/'+self.cuentaUsuario.idCuenta+'"target="_blank">'+self.cuentaUsuario.nombreCuenta+'</a></p>'+
+                                                '<p>Tipo Cuenta:'+self.cuentaUsuario.TipoRegistro+'</p>'+
+                                                '<p>Tipo de Persona:'+self.cuentaUsuario.TipoPersona+'</p>'+
+                                            '</div>'+
+                                            '<div id="menu2" class="tab-pane fade">'+
+                                                '<p>Nombre de Usuario:'+self.cuentaUsuario.UserFirst+' '+self.cuentaUsuario.UserLast+'</p>'+
+                                            '</div>'+
+                                        '</div>'+
+                                    '</div>';
+                            infowindow.setContent(contenido);
+                            infowindow.open(map, markers);
+                            },
+                        });
+                        var ObjReunion=self.search(markers.title, self.nameReunion);
+                        var dateInicio = new Date(ObjReunion.date_start);
+                        var d = dateInicio.getDate();
+                        var m = dateInicio.getMonth() + 1;
+                        var y = dateInicio.getFullYear();
+                        var fechaCompleta = [m, d, y].join('/');
+                        //var fechaInicioNueva = Date.parse(fechaCompleta);
+
+                        var dateEnd = new Date(ObjReunion.date_end);
+                        var de = dateEnd.getDate();
+                        var me = dateEnd.getMonth() + 1;
+                        var ye = dateEnd.getFullYear();
+                        var fechaCompletafin = [me, de, ye].join('/');
+                        //var fechaFin = Date.parse(fechaCompletafin);
+                        //infowindow.setContent(contenido);
+                        //infowindow.open(this.map, markers);
+                    }
+                })(markers, i));
                 loc = new google.maps.LatLng(parseFloat(markers.position.lat()), parseFloat(markers.position.lng()));
                 bounds.extend(loc);
+                this.marcadores.push(markers);
             }
             map.fitBounds(bounds);
             map.panToBounds(bounds);
             this.context.trigger('refresh:count');     
         }
     },
+    
+    abrirInfoWindow:function(ev){
+        var idReunion=ev.currentTarget.getAttribute('data-id');
+        console.log("El id del marcador es:"+idReunion);
+        for(var i=0;i<this.marcadores.length;i++){
+            if(this.marcadores[i].title==idReunion){
+                console.log("El infowindow se muestra");
+            }
+        }
+    },
+    
+    cerrarInfoWindow:function(ev){
+        var idReunion=ev.currentTarget.getAttribute('data-id');
+        console.log("El id del marcador es:"+idReunion);
+        for(var i=0;i<this.marcadores.length;i++){
+            if(this.marcadores[i].title==idReunion){
+                console.log("El infowindow se cierra");
+            }
+        } 
+    },
+
     /**
      * Bind various events that are associated with this view.
      *
@@ -857,5 +978,6 @@
         this.initMap();
         //Barras de filtros
         console.log("Reordenamiento de encabezados");
-    }
+    },
+
 })

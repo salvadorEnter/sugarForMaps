@@ -35,6 +35,9 @@
          */
         this._showMoreLabel = this.meta && this.meta.label || 'TPL_SHOW_MORE_MODULE';
         this._initPagination();
+        this.Reunion=[];
+        this.nameReunion=[];
+        this.cuentaUsuario;
     },
 
     /**
@@ -60,7 +63,6 @@
         var options = {};
         options.success = _.bind(function() {
             this.layout.trigger('list:paginate:success');
-            //this.getCoordenadas();
             // FIXME: This should trigger on `this.collection` instead of
             // `this.context`. Will be fixed as part of SC-2605.
             this.context.trigger('paginate');
@@ -72,37 +74,106 @@
 
         this.render();
     },
-
+    /*list-bottom*/
     getCoordenadas:function(modelos){
         window.Coordenadas=[];
+        this.Reunion=[];
+        this.nameReunion=[];
         if (modelos.length>0){
             for(var i=0;i<modelos.length;i++){
                 if((modelos[i].attributes.check_in_latitude_c!="" && modelos[i].attributes.check_in_latitude_c!=undefined) && (modelos[i].attributes.check_in_longitude_c!="" && modelos[i].attributes.check_in_longitude_c!=undefined)){
                     window.Coordenadas.push({lat:parseFloat(modelos[i].attributes.check_in_latitude_c),lng:parseFloat(modelos[i].attributes.check_in_longitude_c)});
-                    //console.log("El valor de Coordenadas es:"+this.CoordenadasB);    
+                    this.Reunion.push(this.collection.models[i].attributes.id);
+                    this.nameReunion.push({'id':this.collection.models[i].attributes.id,
+                                           'name':this.collection.models[i].attributes.name,
+                                           'status':this.collection.models[i].attributes.status,
+                                           'date_start':this.collection.models[i].attributes.date_start,
+                                           'date_end':this.collection.models[i].attributes.date_end});    
                 }
             }
         }
     },
 
+    search:function(key,nameReunion){
+        for(var i=0;i<nameReunion.length;i++){
+            if(nameReunion[i].id===key){
+            return nameReunion[i];
+            }
+        }
+    },
+
     initMapa:function(){
+        var self=this;
         var bounds= new google.maps.LatLngBounds();
-         var map = new google.maps.Map(document.getElementById('map'), {
+        //var contenido=$('#contenido');
+        var map = new google.maps.Map(document.getElementById('map'), {
             zoom: 7,
             center: {lat: 19.4326018, lng: -99.13320490000001}
             });
         if(window.Coordenadas.length>0){
-            var final=window.Coordenadas[window.Coordenadas.length-1];
+            var infowindow = new google.maps.InfoWindow();
             map = new google.maps.Map(document.getElementById('map'), {
-                    //zoom: 7,
-                    //center: {lat: 19.4326018, lng: -99.13320490000001}
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                    mapTypeIds: ['roadmap', 'terrain']
+                }
             });
             for(var i=0;i<window.Coordenadas.length;i++){
                 var mylocation=window.Coordenadas[i];
                 var markers=new google.maps.Marker({
                     position:mylocation,
-                    map:map
+                    map:map,
+                    title:this.Reunion[i],
+                    clickable:true
                 });
+                google.maps.event.addListener(markers, 'click', (function (markers, i) {
+                    return function () {
+                        var cuentas_url=app.api.buildURL('GetAccountsMeetings/'+markers.title,null,null,null);
+                        app.api.call('GET',cuentas_url,{},{
+                            success:function(data){
+                            self.cuentaUsuario=data;
+                            var contenido='<div class="container" style="width:300px; height:200px;">'+
+                                        '<ul class="nav nav-tabs">'+
+                                            '<li class="active">'+
+                                                '<a data-toggle="tab" href="#home">'+
+                                                    'Reunión'+
+                                                '</a>'+
+                                            '</li>'+
+                                            '<li>'+
+                                                '<a data-toggle="tab" href="#menu1">'+
+                                                    'Cuenta'+
+                                                '</a>'+
+                                            '</li>'+
+                                            '<li>'+
+                                                '<a data-toggle="tab" href="#menu2">'+
+                                                    'Usuario'+
+                                                '</a>'+
+                                            '</li>'+
+                                        '</ul>'+
+                                        '<div class="tab-content">'+
+                                            '<div id="home" class="tab-pane fade in active">'+
+                                                '<p><a href="#Meetings/'+ObjReunion.id+'"target="_blank">'+ObjReunion.name+'</a></p>'+
+                                                '<p>Estado:'+App.lang.getAppListStrings('meeting_status_dom')[ObjReunion.status]+'</p>'+
+                                                '<p>Fecha Inicio:'+ObjReunion.date_start+'</p>'+
+                                                '<p>Fecha Fin:'+ObjReunion.date_end+'</p>'+
+                                            '</div>'+
+                                            '<div id="menu1" class="tab-pane fade">'+
+                                                '<p>Nombre</p>'+
+                                                '<p>Tipo Cuenta:</p>'+
+                                                '<p>Tipo de Persona</p>'+
+                                            '</div>'+
+                                            '<div id="menu2" class="tab-pane fade">'+
+                                                '<p>Nombre de Usuario</p>'+
+                                            '</div>'+
+                                        '</div>'+
+                                    '</div>';
+                            infowindow.setContent(contenido);
+                            infowindow.open(map, markers);
+                            },
+                        });
+                        var ObjReunion=self.search(markers.title, self.nameReunion);
+                    }
+                })(markers, i));
                 loc = new google.maps.LatLng(parseFloat(markers.position.lat()),parseFloat (markers.position.lng()));
                 bounds.extend(loc);
             }

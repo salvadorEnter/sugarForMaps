@@ -50,6 +50,10 @@
      *          ),
      *     </code></pre>
      */
+     events:{
+        'click #plan':'controlSelection',
+        'click .historial':'EjemploClick'
+    },
     initialize: function(opts) {
         // The filter options default to true.
         var defaultOptions = {
@@ -129,6 +133,143 @@
         this.trigger('filterpanel:change:module', (moduleMeta.activityStreamEnabled && lastViewed === 'activitystream') ? 'Activities' : defaultModule);
     },
 
+    EjemploClick:function(){
+        console.log("Evento delsegundo boton");
+    },
+
+    controlSelection:function(){
+        var directionsService = new google.maps.DirectionsService;
+        var directionsDisplay = new google.maps.DirectionsRenderer;
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 7,
+            center: {lat: 19.4326018, lng: -99.13320490000001}
+            });
+        //setMapOnAll(null);
+        self=this;
+        var id_user=app.user.id;
+        var filtro='filter[0][assigned_user_id][$equals]='+id_user;
+        //var longitud=this.model.get('check_in_latitude_c');
+        //var latitud=this.model.get('check_in_longitude_c');
+        var markeroute=[];
+        var meetings=[];
+        var markfecha=[];
+        var marhubicacion=[];
+        var markerRuta=[];
+        console.log("Entro al click boton del mapa");
+            var meetings_url=app.api.buildURL('Meetings?'+filtro+'&order_by=date_start:desc'+'&max_num=-1', null,null, null);
+            app.api.call('GET', meetings_url,{},{
+                success:function(data){
+                    self.meetings=data;
+                    if(self.meetings.records.length>0){
+                        for(var i=0;i<self.meetings.records.length;i++){
+                            if((self.meetings.records[i].check_in_latitude_c!="" &&self.meetings.records[i].check_in_latitude_c!=null &&self.meetings.records[i].check_in_latitude_c!=undefined) && (self.meetings.records[i].check_in_longitude_c!=""&&self.meetings.records[i].check_in_longitude_c!=null&&self.meetings.records[i].check_in_longitude_c!=undefined)){
+                                markeroute.push(self.meetings.records[i]);
+                            }
+                        }
+                        /*Se trazara la ruta de reuniones si las reuniones son en estado planificada 
+                              Y mayores a la fecha actual
+                        */
+                        if($('#select').val()==1){
+                            console.log('Por fecha de inicio');
+                            // FECHA ACTUAL
+                            var dateActual = new Date();
+                            for(var i=0;i<markeroute.length;i++){
+                                /*Conversion de la fecha*/
+                                var dateInicio = new Date(markeroute[i].date_start);
+                                if((dateInicio>dateActual)&&(markeroute[i].status=='Planned')){
+                                    markfecha.push({
+                                                    'Date_start':markeroute[i].date_start,
+                                                    'lat':parseFloat(markeroute[i].check_in_latitude_c),
+                                                    'lng':parseFloat(markeroute[i].check_in_longitude_c)
+                                                    });
+                                    console.log("Si entro al arreglo");
+                                }
+                            }
+                            console.log("El valor de markfecha es"+markfecha.length)
+                            for(var i=0;i<markfecha.length;i++){
+                                var markers=new google.maps.Marker({
+                                    position:{
+                                              lat: markfecha[i].lat, 
+                                              lng: markfecha[i].lng
+                                             },
+                                    map:map,
+                                    title:markfecha[i].Date_start
+                                });
+                                markerRuta.push(markers.position);
+                                //markerRuta.push(markers);
+                            }
+                            var marg=[];
+                            for (var i = 0; i < markerRuta.length; i++) {
+                                var geocoder = new google.maps.Geocoder(markerRuta); 
+                                marg.push(markerRuta);
+                            }
+
+
+                            /*for(var i=0;i<markerRuta.length;i++){
+                            directionsService.route({
+                                origin:markerRuta[0],
+                                //origin:markerRuta[0].position,
+                                destination:markerRuta[markerRuta.length-1],
+                                //destination:markerRuta[length-1].position,
+                                //markerRuta[markerRuta.length-1]),
+                                waypoints: markerRuta,
+                                //waypoints: markerRuta[i].position,
+                                optimizeWaypoints: true,
+                                travelMode: 'DRIVING'
+                                },function(response, status) {
+                                    if (status === 'OK') {
+                                        directionsDisplay.setDirections(response);
+                                        var route = response.routes[0];
+                                        //var summaryPanel = document.getElementById('directions-panel');
+                                        summaryPanel.innerHTML = '';
+                                        // For each route, display summary information.
+                                        for (var i = 0; i < route.legs.length; i++) {
+                                            var routeSegment = i + 1;
+                                            summaryPanel.innerHTML += '<b>Route Segment: ' + routeSegment +'</b><br>';
+                                            summaryPanel.innerHTML += route.legs[i].start_address + ' to ';
+                                            summaryPanel.innerHTML += route.legs[i].end_address + '<br>';
+                                            summaryPanel.innerHTML += route.legs[i].distance.text + '<br><br>';
+                                        }
+                                    } 
+                                    else {
+                                        window.alert('Directions request failed due to ' + status);
+                                    }
+                                });
+                            }*/
+                            //markfecha.sort((a,b)=>a-b);
+                            //console.log('Ordenamiento');
+                        }
+                        /*Trazara la ruta con base a la ubicacion actual
+                              Si la reunión esta en estado planificada
+                        */
+                        if($('#select').val()==2){
+                            console.log("Por Ubicacion actual");
+                            for(var i=0;i<markeroute.length;i++){
+                                if(markeroute[i].status=='Planed'){
+                                    marhubicacion.push(markeroute[i]);
+                                }
+                                else{
+                                    console.log("No se agrego");
+                                }
+                            }
+                        }
+                        /*Trazara la ruta con base a la ubicacion de la oficina
+                        */
+                        if($('#select').val()==3){
+                            console.log("Por Oficina");
+                            for(var i=0;i<markeroute.length;i++){
+                                if(markeroute[i].status=='Planed'){
+                                    marhubicacion.push(markeroute[i]);
+                                }
+                                else{
+                                    console.log("No se agrego");
+                                }
+                            }
+                        }
+                    }
+                },
+            });
+        },
     /**
      * Applies last filter
      * @param {Collection} collection the collection to retrieve the filter definition
